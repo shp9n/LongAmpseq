@@ -1,12 +1,22 @@
 #!/bin/bash
 
+chr_num=${1:-GFPBFP}
+pcr_start=${2:-1}
+cut_site_left=${3:1004}
+cut_site_right=${4:1005}
+pcr_end=${5:-9423}
+ref_genome=${6:-GFPBFP_9423bp_NEW_ref_cutsite_1004bp.fa}
+##########################
+# put the script in the same directory as demultiplexed fastq files.
 
-#modified from 0915 verision
-#end with fastq
-#start with merging
-#use full hg19
-#use q30 only for the initial alignment and filtering (same for 0915)
-#removed the deduct part
+# end with fastq
+# start with merging
+# use full hg19
+# use q30 only for the initial alignment and filtering (same for 0915)
+# removed the duplication deduct part
+
+# Yidan Pan @Baolab
+##########################
 
 # cell-line cut site:1356
 # X = 189
@@ -15,23 +25,20 @@
 # start with merged fastq
 # use standard setting to include Y>106 X<189
 
-# for fastq.gz
-for file in *C19_RNPH_1_S4_L001_R1_001.fastq.gz
+for file in *R1_001.fastq
 do
-  flash -M600 $file ${file/R1/R2}
-  mv ./out.extendedFrags.fastq ${file/.fastq.gz/_merged.fastq}
+  flash -M600 ${file} ${file/R1/R2} # read length = 300 so we use 300*2 as maximum merged read length
+  mv ./out.extendedFrags.fastq ${file/.fastq/_merged.fastq}
 done
 
-echo 0308 > log.txt
-
-for file in *C19_RNPH_1_S4_L001_R1_001_merged.fastq
+for file in *merged.fastq
 do
-  bwa mem /home/yp11/Desktop/genomes/GFPBFP/GFPBFP_9423bp_NEW_ref_cutsite_1004bp.fa ${file} > ${file/.fastq/.sam}
+  bwa mem ${ref_genome} ${file} > ${file/.fastq/.sam}
   samtools view -S -b -q 30 ${file/.fastq/.sam} | samtools sort -o ${file/.fastq/_sorted.bam}
   samtools index ${file/.fastq/_sorted.bam}
-  samtools view -b ${file/.fastq/_sorted.bam} GFPBFP:1-1004 > ${file/.fastq/_sortedleft.bam}
+  samtools view -b ${file/.fastq/_sorted.bam} ${chr_num}:${pcr_start}-${cut_site_left} > ${file/.fastq/_sortedleft.bam}
   samtools index ${file/.fastq/_sortedleft.bam}
-  samtools view -b ${file/.fastq/_sorted.bam} GFPBFP:1005-9423 > ${file/.fastq/_sortedright.bam}
+  samtools view -b ${file/.fastq/_sorted.bam} ${chr_num}:${cut_site_right}-${pcr_end} > ${file/.fastq/_sortedright.bam}
   samtools index ${file/.fastq/_sortedright.bam}
   samtools view -F 4 ${file/.fastq/_sortedleft.bam} | cut -f1 | sort -u > ${file/.fastq/_leftID.txt}
   samtools view -F 4 ${file/.fastq/_sortedright.bam} | cut -f1 | sort -u > ${file/.fastq/_rightID.txt}
@@ -39,7 +46,7 @@ do
   seqtk subseq ${file} ${file/.fastq/_bothID.txt} > ${file/.fastq/30_filtered.fastq}
 ##now we have filtered fastq
 #
-  bwa mem /home/yp11/Desktop/genomes/GFPBFP/GFPBFP_9423bp_NEW_ref_cutsite_1004bp.fa ${file/.fastq/30_filtered.fastq} >${file/.fastq/30_filtered.sam}
+  bwa mem ${file} ${file/.fastq/30_filtered.fastq} >${file/.fastq/30_filtered.sam}
   samtools view -S -b ${file/.fastq/30_filtered.sam} -o ${file/.fastq/30_filtered.bam}
   samtools sort ${file/.fastq/30_filtered.bam} -o ${file/.fastq/30_filteredsorted.bam}
   bedtools bamtobed -i ${file/.fastq/30_filteredsorted.bam} > ${file/.fastq/30_filtered.bed}
@@ -51,7 +58,7 @@ do
   seqtk subseq ${file/.fastq/30_filtered.fastq} ${file/.fastq/filtered_2+alignID.txt} > ${file/.fastq/30_filtered_2+.fastq}
   seqtk subseq ${file/.fastq/30_filtered.fastq} ${file/.fastq/filtered_1alignID.txt} > ${file/.fastq/30_filtered_1.fastq}
 #
-  bwa mem /home/yp11/Desktop/genomes/GFPBFP/GFPBFP_9423bp_NEW_ref_cutsite_1004bp.fa ${file/.fastq/30_filtered_2+.fastq} >${file/.fastq/filtered_2+.sam}
+  bwa mem ${file} ${file/.fastq/30_filtered_2+.fastq} >${file/.fastq/filtered_2+.sam}
   samtools view -S -b ${file/.fastq/filtered_2+.sam} -o ${file/.fastq/filtered_2+.bam}
   bedtools bamtobed -i ${file/.fastq/filtered_2+.bam} > ${file/.fastq/filtered_2+.bed}
 #
