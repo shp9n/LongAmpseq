@@ -15,7 +15,7 @@ Processing read splitting patterns output from bash scripts and provide large de
 Data visualizations.  
   
 **Folder: Nanopore**    
-The scripts for processing Nanopore data.
+The scripts for processing Nanopore data (by Yilei Fu @ Treagen Lab).
 The jupyter notebook provides raw sequencing data alignment, large deletion calling, clustering, downstream analysis 
 and visualizations.
 
