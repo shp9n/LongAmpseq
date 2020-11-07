@@ -69,7 +69,7 @@ do
   # BGplus=$(echo $(cat C19_RNPH_1_S4_L001_R1_001_merged30_filtered.fastq|wc -l)/4|bc)
 #  #convert to csv
   cat ${file/.fastq/filtered_2+.bed} | tr "\\t" "," > ${file/.fastq/filtered_2+.csv}
-  python ~/Documents/scripts/0308_bedfile_cl.py ${file/.fastq/filtered_2+.csv} ${file/.fastq/largedel_output.csv} ${file/.fastq/largedel_group.csv} 9423 ${BGplus}
+  python bedfile_cl.py ${file/.fastq/filtered_2+.csv} ${file/.fastq/largedel_output.csv} ${file/.fastq/largedel_group.csv} 9423 ${BGplus}
   python ~/Documents/scripts/0309_longampfigures.py ${file/.fastq/largedel_output.csv} 1004
 # now here comes the difference.
 # Large del: start & end

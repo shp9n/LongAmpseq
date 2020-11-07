@@ -29,8 +29,15 @@ conda install -c bioconda bwa samtools seqtk bedtools
 conda install numpy scikit-learn pandas scipy
 conda install -c conda-forge matplotlib
 ```  
+
+For delly installation, please refer to the original github page: https://github.com/dellytools/delly
+
 After setting up the environment, you can put the scripts into the folder containing the demultiplexed fastqs 
 (The standard output fastq of bcl2fastq should end with R1_001.fastq or R2_001.fastq).  
+
+```
+git clone https://github.com/baolab-rice/LongAmpseq.git ./
+``` 
 
 ## LongAmp-seq analysis
 + Raw data processing  
@@ -43,7 +50,7 @@ For example:
 ```
 bash longamp_bwa_PCR.sh chr11 5245453 5248229 5248230 5250918 ~/Desktop/genomes/hg19/hg19.fa
 ```
-And the output in csv format should look like:
+And the output in csv format (file name ended with "filtered_2+.csv") should look like:
 
 | Chromosome | Start    | End      | Read ID                                      | Score | Strand |
 |------------|----------|----------|----------------------------------------------|-------|--------|
@@ -57,6 +64,29 @@ bash longamp_bwa_cellline.sh GFPBFP 1 1004 1005 9423 GFPBFP_9423bp_NEW_ref_cutsi
 
 + Large deletion Profile generating  
 
+The raw data processing section will call the correlated script and run it for you. 
+For processing this step by yourselves, users can run the command as below:
+```
+# for general use
+python bedfile.py [the filtered_2+.csv file] [output1: largedel_output.csv] [output2: largedel_group.csv]
+
+# or for using reporter cell line
+# Step 1: get the read number that spanning the cut site without large deletion:
+echo $(cat [your file end with 30_filtered_1.fastq]|wc -l)/4|bc
+# Step 2: run the following command
+python bedfile_cellline.py [the filtered_2+.csv file] [output1: largedel_output.csv] [output2: largedel_group.csv] [length of amplicon, default=9423] [The number you got in Step 1]
+```
+
++ Visualization  
+
+The raw data processing section will call the correlated script and run it for you. 
+For processing this step by yourselves, users can run the command as below:
+```
+# for general use
+python longampfigures_distribution.py [the largedel_output.csv file] 
+
+# or for using reporter cell line, use the "red_blue_profile_cellline" function instead of the standard function.
+```
 
 ---------------------------------------
 
